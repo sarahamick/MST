@@ -1,0 +1,77 @@
+#include<iostream>
+#include <fstream>
+#include <string>
+#include<vector>
+#include<sstream>
+#include<set>
+using namespace std;
+
+//method implementing the Kruskal's MST algorithm
+int mst(long** graph, int numE){
+
+  //1. Count # of verticies in graph
+  set<int> vertices;
+  for(int i = 0; i < numE; i++){
+    for(int j = 0; j < 2; j++){
+      vertices.insert(graph[i][j]);
+    }
+  }
+  int numV = vertices.size();
+
+  //2. Initialize the UF array with each V the parent of itself
+   int* uf = new int[numV];
+   for(int i = 0; i < numV; i++) uf[i] = i;
+
+  //3. Sort the edges from least -> greatest weight
+  int size = sizeof(graph) / sizeof(*graph);
+  auto comp = (const graph<int, 2>& u, const graph<int, 2>& v)
+      {return u[2] < v[2];};
+
+  qsort(graph, size, sizeof(*graph), comp);
+
+  //4. Pick an edge to add to the MST one at a time
+  //5. For each edge, check if the two vertices the edge connects are already connected (via Find)
+  //6. If not, Union that edge
+  return -1;
+}
+
+//method to split a string by a specified delimiter
+vector<string> split(const string& s, char delimiter){
+  vector<string> tokens;
+  string token;
+  istringstream tokenStream(s);
+  while (getline(tokenStream, token, delimiter)){
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+//method to convert a text graph representation into a 2D array
+long** read_file(int n, string filename){
+
+  long** graph; //create a pointer to a 2D array in memory:
+  graph = new long*[n];
+  for(int i = 0; i < n; ++i) graph[i] = new long[3];
+
+  string line; //read from the file
+  ifstream myfile(filename);
+  if (myfile.is_open()){
+    int count = 0;
+    while(getline(myfile, line)){
+      vector<string> edge = split(line, ' ');
+      graph[count][0] = stol(edge[0]); //stol converts string to long
+      graph[count][1] = stol(edge[1]);
+      graph[count][2] = stol(edge[2]);
+      count = count + 1;
+    }
+    myfile.close();
+  }
+  else cout << "Unable to open file \n";
+  return graph;
+}
+
+//method to call functions from
+int main(int argc, char** args){
+  long** graph = read_file(atoi(args[1]), args[2]);
+  int i = mst(graph, atoi(args[1]));
+}

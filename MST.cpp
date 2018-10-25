@@ -24,43 +24,55 @@ bool sortCol(const vector<long>& v1, const vector<long>& v2){
   return v1[2] < v2[2];
 }
 
-long getParent(long* uf, long v){
+long find(long* uf, long v){
   if(uf[v]!=v){
-    uf[v] = getParent(uf, uf[v]);
+    uf[v] = find(uf, uf[v]);
   }
   return uf[v];
 }
 
-void unionVertices(long* uf, long v1, long v2){
-  long parent = getParent(uf, v1);
-  uf[parent] = v2;
+void unionVertices(long* uf, long* rank, long v1, long v2){
+  long v1Parent = find(uf, v1);
+  long v2Parent = find(uf, v2);
+  if(rank[v1Parent] < rank[v2Parent]) {
+    uf[v1Parent] = v2Parent;
+    rank[v2Parent] = rank[v2Parent] + 1;
+  }
+  else {
+    uf[v2Parent] = v1Parent;
+    rank[v1Parent] = rank[v1Parent] + 1;
+  }
 }
 
-bool find(long* uf, long v1, long v2){
-  return getParent(uf, v1) == getParent(uf, v2);
+bool connected(long* uf, long v1, long v2){
+  return find(uf, v1) == find(uf, v2);
 }
 
 //method implementing the Kruskal's MST algorithm
 long mst(vector< vector<long> >* graph, int numE, int& numV){
-
   //1. Initialize the UnionFind array to be size of number vertices with each V the parent of itself
    long* uf = new long[numV];
-   for(int i = 0; i != numV; ++i) uf[i] = i;
-
+   long* rank = new long[numV];
+   for(int i = 0; i != numV; ++i) {
+     uf[i] = i;
+     rank[i] = 0;
+   }
   //2. Sort the edges from least -> greatest weight
   sort(graph->begin(), graph->end(), sortCol);
-  // for(int i = 0; i < numE; i++) cout << graph->at(i)[0] << " " << graph->at(i)[1] << " " << graph->at(i)[2] << endl;
-
   //3. Pick an edge to add to the MST one at a time, if the two vertices it connects aren't already connected
   long weight = 0;
+  long v1;
+  long v2;
   for(int i = 0; i != numE; ++i){
-    // cout << "Edge: " << graph->at(i)[0] << "-" << graph->at(i)[1] << endl;
-    if(!(find(uf, graph->at(i)[0], graph->at(i)[1]))){
+    v1 = graph->at(i)[0];
+    v2 = graph->at(i)[1];
+    if(!connected(uf, v1, v2)){
       weight += graph->at(i)[2];
-      unionVertices(uf, graph->at(i)[0], graph->at(i)[1]);
+      unionVertices(uf, rank, v1, v2);
     }
   }
   delete[] uf;
+  delete[] rank;
   return weight;
 }
 
